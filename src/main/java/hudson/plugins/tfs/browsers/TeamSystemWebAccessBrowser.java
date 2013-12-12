@@ -47,7 +47,7 @@ public class TeamSystemWebAccessBrowser extends TeamFoundationServerRepositoryBr
         if (url != null) {
             baseUrl = DescriptorImpl.getBaseUrl(url);
         } else {
-            baseUrl = String.format("%s/", getServerConfiguration(changeSet)); 
+            baseUrl = String.format("%s/", getServerConfiguration(changeSet));
         }
         return baseUrl;
     }
@@ -57,20 +57,25 @@ public class TeamSystemWebAccessBrowser extends TeamFoundationServerRepositoryBr
      */
     @Override
     public URL getChangeSetLink(ChangeSet changeSet) throws IOException {
-        return new URL(String.format("%scs.aspx?cs=%s", getBaseUrlString(changeSet), changeSet.getVersion()));
+//        return new URL(String.format("%scs.aspx?cs=%s", getBaseUrlString(changeSet), changeSet.getVersion()));
+        return new URL(String.format("%s_versionControl/changeset?id=%s", getBaseUrlString(changeSet), changeSet.getVersion()));
     }
 
     /**
      * http://tswaserver:8090/view.aspx?path=$/Project/Folder/file.cs&cs=99
+     * http://tfs.seek.int:8080/tfs/SEEK/Online/_VersionControl#path=%24%2FOnline%2FTrunk%2FAutomation%2FWebdriver%2FSEEK.Search.API%2FApp.config&_a=contents
+     *
      * @param item
      * @return
      */
     public URL getFileLink(ChangeSet.Item item) throws IOException {
-        return new URL(String.format("%sview.aspx?path=%s&cs=%s", getBaseUrlString(item.getParent()), item.getPath(), item.getParent().getVersion()));
+        return new URL(String.format("%s_VersionControl#path=%s&_a=contents", getBaseUrlString(item.getParent()), item.getPath()));
     }
 
     /**
      * http://tswaserver:8090/diff.aspx?opath=$/Project/Folder/file.cs&ocs=99&mpath=$/Project/Folder/file.cs&mcs=98
+     * _VersionControl#path=%24%2FOnline%2FTrunk%2FAutomation%2FWebdriver%2FAutomationSCM.msbuild&_a=compare
+     *
      * @param item
      * @return
      * @throws IOException
@@ -81,17 +86,16 @@ public class TeamSystemWebAccessBrowser extends TeamFoundationServerRepositoryBr
             return null;
         }
         try {
-            return new URL(String.format("%sdiff.aspx?opath=%s&ocs=%s&mpath=%s&mcs=%s", 
-                    getBaseUrlString(parent), 
-                    item.getPath(),
-                    getPreviousChangeSetVersion(parent), 
-                    item.getPath(),
-                    parent.getVersion()));
+            return new URL(
+                    String.format("$s_VersionControl#path=%s&_a=compare",
+                            getBaseUrlString(parent),
+                            item.getPath()
+                    ));
         } catch (NumberFormatException nfe) {
             return null;
         }
     }
-    
+
     private String getPreviousChangeSetVersion(ChangeSet changeset) throws NumberFormatException {
         return Integer.toString(Integer.parseInt(changeset.getVersion()) - 1);
     }
@@ -107,10 +111,10 @@ public class TeamSystemWebAccessBrowser extends TeamFoundationServerRepositoryBr
         public String getDisplayName() {
             return "Team System Web Access";
         }
-        
+
         public static String getBaseUrl(String urlExample) throws MalformedURLException {
-        	URL url = new URL(urlExample);
-        	return new URL(url.getProtocol(), url.getHost(), url.getPort(), String.format("/%s", FilenameUtils.getPath(url.getPath()))).toString();
+            URL url = new URL(urlExample);
+            return new URL(url.getProtocol(), url.getHost(), url.getPort(), String.format("/%s", FilenameUtils.getPath(url.getPath()))).toString();
         }
     }
 }
